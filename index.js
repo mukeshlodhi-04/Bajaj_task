@@ -9,6 +9,17 @@ const isNumber = (str) => !isNaN(str) && !isNaN(parseFloat(str));
 const isAlphabet = (str) => /^[a-zA-Z]+$/.test(str);
 const isSpecialChar = (str) => /[^a-zA-Z0-9]/.test(str) && str.length === 1;
 
+// Generate user_id in the required format: full_name_ddmmyyyy
+const generateUserId = () => {
+  const fullName = "mukesh_lodhi"; 
+
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const year = now.getFullYear();
+  return `${fullName}_${day}${month}${year}`;
+};
+
 // Process data function
 const processData = (data) => {
   let oddNumbers = [];
@@ -19,29 +30,33 @@ const processData = (data) => {
   let alphaChars = [];
 
   data.forEach(item => {
-    if (isNumber(item)) {
-      const num = parseInt(item);
+    // Convert to string to handle numbers passed as strings
+    const strItem = String(item);
+    
+    if (isNumber(strItem)) {
+      const num = parseInt(strItem);
       sum += num;
       if (num % 2 === 0) {
-        evenNumbers.push(item.toString());
+        evenNumbers.push(strItem);
       } else {
-        oddNumbers.push(item.toString());
+        oddNumbers.push(strItem);
       }
-    } else if (isAlphabet(item)) {
-      const upperCase = item.toUpperCase();
+    } else if (isAlphabet(strItem)) {
+      const upperCase = strItem.toUpperCase();
       alphabets.push(upperCase);
-      // Add each character for concatenation
+      // Add each character for concatenation in reverse order
       for (let char of upperCase) {
-        alphaChars.push(char);
+        alphaChars.unshift(char); // Add to beginning to reverse order
       }
-    } else if (isSpecialChar(item)) {
-      specialCharacters.push(item);
+    } else if (isSpecialChar(strItem)) {
+      specialCharacters.push(strItem);
     }
+   
+
   });
 
-  // Create concatenated string in reverse order with alternating caps
+  // Create concatenated string with alternating caps
   let concatString = '';
-  alphaChars.reverse();
   for (let i = 0; i < alphaChars.length; i++) {
     if (i % 2 === 0) {
       concatString += alphaChars[i].toUpperCase();
@@ -76,12 +91,13 @@ app.post('/bfhl', (req, res) => {
     
     res.json({
       is_success: true,
-      user_id: "john_doe_17091999", // Replace with actual logic to generate this
-      email: "john@xyz.com", // Replace with actual email
-      roll_number: "ABCD123", // Replace with actual roll number
+      user_id: generateUserId(),
+      email: "mukeshlodhi2022@vitbhopal.ac.in",
+      roll_number: "22BEY10090", 
       ...result
     });
   } catch (error) {
+    console.error("Error processing request:", error);
     res.status(500).json({
       is_success: false,
       error: "Internal server error"
@@ -89,7 +105,7 @@ app.post('/bfhl', (req, res) => {
   }
 });
 
-// GET endpoint (optional, for testing)
+// GET endpoint (for testing)
 app.get('/bfhl', (req, res) => {
   res.json({
     operation_code: 1
